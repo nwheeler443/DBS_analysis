@@ -1,0 +1,14 @@
+run DBS:
+
+~/scripts/deltaBS.pl -e1 emblfileone -e2 emblfiletwo -pa1 pfamannotationfileone -pa2 pfamannotationfiletwo -o outdirectory -verbose -hp /usr/local/bin/ -hd ~/scripts -t /tmp
+
+analyse results:
+
+~/scripts/findmissinggenes.pl orthlist fastafile outfile
+R
+source(“~/scripts/pathwayloss.R”)
+pathloss(“commensal”, “pathogen”)
+source(“~/scripts/stackedbar.R”)
+stackedbar(“commensal”, “pathogen”)
+source(“~/scripts/gotermlosses.R”)
+goloss(“commensal”, “pathogen”)
