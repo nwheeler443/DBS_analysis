@@ -1,6 +1,9 @@
 plotresults <- function(comm, path, xaxvalues=c(-10,10), breaks=500) {
-    dbs <- read.table(paste(comm, "-", path, "/results.dbs", sep=""))
+    dbs <- read.table(paste(comm, "-", path, "/results.dbs", sep=""), stringsAsFactors=F)
     info <- read.delim(paste("genomes/", path, ".info", sep=""), header=F)
+	exclude <- read.table(paste(comm, "-", path, "/nonschanges", sep=""), stringsAsFactors=F)
+	
+	dbs <- dbs[is.na(match(dbs[,1], exclude[,1])),]
     
 	genelist <- genelist <- cbind(dbs[,c(1,2,3,10,12)], info[match(dbs[,2], info[,1]), 2:ncol(info)])
     write.table(genelist, file=paste(comm, "-", path, "/genelist.txt", sep=""), quote=F, sep="\t", col.names=F, row.names=F)
