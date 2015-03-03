@@ -5,7 +5,7 @@ plotresults <- function(comm, path, xaxvalues=c(-10,10), breaks=500) {
 	
 	dbs <- dbs[is.na(match(dbs[,1], exclude[,1])),]
 	
-	dbs$p.adj <- p.adjust(dbs$V12, method="BH")
+	dbs$p.adj <- signif(p.adjust(dbs$V12, method="BH"), 3)
     
 	genelist <- genelist <- cbind(dbs[,c(1,2,3,10,13)], info[match(dbs[,2], info[,1]), 2:ncol(info)])
     write.table(genelist, file=paste(comm, "-", path, "/genelist.txt", sep=""), quote=F, sep="\t", col.names=F, row.names=F)
