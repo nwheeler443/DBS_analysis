@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+## INPUT : NOTHING
+
 ### want to be able to take an hmmalign file and an hmm file and prodice a position-wise scoring distribution for the protein pair
 
 ###### SCORING METHOD ###########
@@ -16,47 +18,9 @@
 
 # sort out last sequence problem
 
-## ONLY SCORING THE INCIDENCE OF AN INSERTION, NOT THE EMISSION ASSOCIATED WITH IT, AND NOT SCORING M->M TRANSITIONS
-
-#my %backgroundfrequencies = (A=>0.0787945,B=>0.0151600,C=>0.0535222,D=>0.0668298,E=>0.0397062,F=>0.0695071,G=>0.0229198,0.0590092,0.0594422,0.0963728,0.0237718,0.0414386,0.0482904,0.0395639,0.0540978,0.0673417,0.0114135,0.0304133);
-#{
-#	f[0] = 0.0787945;		/* A */
-#	f[1] = 0.0151600;		/* C */
-#	f[2] = 0.0535222;		/* D */
-#	f[3] = 0.0668298;		/* E */
-#	f[4] = 0.0397062;		/* F */
-#	f[5] = 0.0695071;		/* G */
-#	f[6] = 0.0229198;		/* H */
-#	f[7] = 0.0590092;		/* I */
-#	f[8] = 0.0594422;		/* K */
-#	f[9] = 0.0963728;		/* L */
-#	f[10]= 0.0237718;		/* M */
-#	f[11]= 0.0414386;		/* N */
-#	f[12]= 0.0482904;		/* P */
-#	f[13]= 0.0395639;		/* Q */
-#	f[14]= 0.0540978;		/* R */
-#	f[15]= 0.0683364;		/* S */
-#	f[16]= 0.0540687;		/* T */
-#	f[17]= 0.0673417;		/* V */
-#	f[18]= 0.0114135;		/* W */
-#	f[19]= 0.0304133;		/* Y */
-#	return eslOK;
-#}
-
-
-#
-#bg->p1    = 350./351.;
-#bg->omega = 1./256.;
-#bg->abc   = abc;
-
-
 # logodds = eslCONST_LOG2R * log(p / bg->f[j]);			from hmmlogo
 
-
-
 # the probability values in the hmm file are e^-(x)
-
-
 
 use warnings;
 use strict;
