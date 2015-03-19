@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 
-## INPUT : NOTHING
+## INPUT : hmm	sequence alignment
 
 ### want to be able to take an hmmalign file and an hmm file and prodice a position-wise scoring distribution for the protein pair
 
 ###### SCORING METHOD ###########
 
 #1	2	3	4	5	6
-#A	D	-	FI	C	w
+#A	D	-	FI	C	W
 
 #M	M	D	M	M	M
 #E	E		E	E	E
@@ -18,16 +18,12 @@
 
 # sort out last sequence problem
 
-# logodds = eslCONST_LOG2R * log(p / bg->f[j]);			from hmmlogo
-
-# the probability values in the hmm file are e^-(x)
-
 use warnings;
 use strict;
 use Data::Dumper;
 
-my $hmmfile = "profilehmm";
-my $alignmentfile = "sequencealignment";
+my $hmmfile = shift @ARGV;
+my $alignmentfile = shift @ARGV;
 
 my %embitscores;
 my %insprobabilities;
@@ -38,15 +34,15 @@ my $type = "residues";
 
 open HMM, $hmmfile;
 while (<HMM>) {
-	if ($_ =~ /COMPO\s+(.+)\n/) {
+	if ($_ =~ /COMPO\s+(.+)$/) {
 		@{$embitscores{COMPO}} = split("  ", $1);		# choosing to use the COMPO background frequencies since im not doing bias filtering
 	}
-	if ($_ =~ /^\s+(\d+)\s+(.+\d)\s+\d+\s+.\s+.$/) {
+	if ($_ =~ /^\s+(\d+)\s+(\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+)/) {
 		$key = "pos$1";
 		$position = $1;
 		@{$embitscores{$key}} = split("  ", $2);
 	}
-	if ($_ =~ /^\s+(\d+.+\d+)$/) {
+	if ($_ =~ /^\s+(\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+)$/) {
 		$key = "pos$position";
 		@{$insprobabilities{$key}} = split("  ", $1);
 	}
@@ -55,32 +51,47 @@ while (<HMM>) {
 		@{$transprobabilities{$key}} = split("  ", $1)
 	}
 }
+close HMM;
 
 #print Dumper (\@{$insprobabilities{pos95}});
+#print Dumper (\@{$transprobabilities{pos359}});
 
 my %residues = (A => 0,C => 1,D => 2,E => 3,F => 4,G => 5,H => 6,I => 7,K => 8,L => 9,M => 10,N => 11,P => 12,Q => 13,R => 14,S => 15,T => 16,V => 17,W => 18,Y => 19);
 
-# make an array called @insertions which has keys for insertions and matches
+# read in alignment file, make an array called @states which has keys for insertions and matches, and put complete sequence into an array
 
 open ALI, $alignmentfile;
+my $seqnum = 1;
+my $name1;
+my $name2;
 my @firstseq;
 my @secondseq;
-my @insertions;
+my @states;
 while (<ALI>) {
-	if ($_ =~ /#=GC RF\s+(.+)\n/) {
-		push @insertions, split("", $1);
+	chomp;
+	if ($_ =~ /#=GC RF\s+(.+)$/) {
+		push @states, split("", $1);
 	}
 	next if ($_ =~ /#/);
 	chomp;
-	if ($_ =~ /species1\s+(.+)/) {
-		push @firstseq, split("", $1);
-	}
-	if ($_ =~ /species2\s+(.+)/) {
-		push @secondseq, split("", $1);
+	if ($_ =~ /(\S+)\s+(\S+)$/) {
+		if ($seqnum == 1) {
+			push @firstseq, split("", $2);
+			$seqnum = 2;
+			$name1 = $1;
+		}
+		elsif ($seqnum == 2) {
+			push @secondseq, split("", $2);
+			$name2 = $1;
+			$seqnum=1;
+		}
 	}
 }
+close ALI;
 
-#print Dumper (\@insertions);
+#print Dumper (@states);
+#print Dumper (@firstseq);
+#print Dumper (\@secondseq);
 
 # go through the sequence and if a match, put it into a match sequence
 # any with insertion, push that into an insertion hash with last match position as key
@@ -95,8 +106,8 @@ my @firstmatches = ("B");
 my @secondmatches = ("B");
 my @firsttransitions;
 my @secondtransitions;
-foreach my $point (0..$#insertions) {
-	if ($insertions[$point] eq "x") {
+foreach my $point (0..$#states) {
+	if ($states[$point] eq "x") {
 		$lastpoint = $lastpoint+1;
 		my $seqpos = $point + 1;
 		$lastmatch = "pos$seqpos";
@@ -115,7 +126,7 @@ foreach my $point (0..$#insertions) {
 			push @secondtransitions, "M";
 		}
 	}
-	if ($insertions[$point] eq "\.") {
+	if ($states[$point] eq "\.") {
 		if ($firstseq[$point] ne "\.") {
 			push @{$firstinserts{$lastmatch}}, uc $firstseq[$point];
 			$firsttransitions[$lastpoint] = "I";			#want to over-write the state for the last point as ending in an insertion
@@ -132,11 +143,11 @@ foreach my $point (0..$#insertions) {
 #print Dumper (\%firstinserts);
 #print Dumper (\%secondinserts);
 #print Dumper (\@firstmatches);
-
+#
 my %scores1;
 my %scores2;
 
-my %transitioncodes = (I => 3, M => 0, D => 5);				# m->m     m->i     m->d     i->m     i->i     d->m     d->d
+my %transitioncodes = (M => 0, I => 3, D => 5);				# m->m     m->i     m->d     i->m     i->i     d->m     d->d
 
 # check that the transitions match up to the right column:
 #foreach my $spot (0..$#firstmatches) {
@@ -146,111 +157,101 @@ my %transitioncodes = (I => 3, M => 0, D => 5);				# m->m     m->i     m->d     
 # scores : transition score, match score, deletion score, insertion transition and emission score
 # transition score is taken from the position before (going to a match state)
 
-#print "position 1, sequence 1: $firstmatches[1]\t$embitscores{pos1}[$residues{$firstmatches[1]}]\t$transprobabilities{pos0}[$transitioncodes{$firsttransitions[0]}]\n";
-#print "position 1, sequence 2: $secondmatches[1]\t$embitscores{pos1}[$residues{$secondmatches[1]}]\t$transprobabilities{pos0}[$transitioncodes{$secondtransitions[0]}]\n";
-
 ## SCORING THE FIRST SEQUENCE
-#score inserts at the start
-#foreach my $res (@{$firstinserts{pos0}}) {
-#	#print $res, "\n";
-#	# need to sort out how the transition scores work here
-#	my $residue = $residues{$res};
-#	my $matchscore = $insprobabilities{pos0}[$residue]-$embitscores{COMPO}[$residue];
-#	#print $matchscore, "\n";			# seems to be producing a mix of positive and negative values - seems promising
-#	push @{$scores1{pos0}}, $matchscore;
-#}
-#score subsequent sequence
 foreach my $pos (1..$#firstmatches) {		# first position is "B"
 	my $matchid = "pos$pos";
 	my $prevpos = $pos-1;
 	my $previd = "pos$prevpos";
-	#score transition
-	my $matchscore = $transprobabilities{$previd}[$transitioncodes{$firsttransitions[$prevpos]}]+log(0.99995);			# need to get an actual null probability and work out the base for the log (just divide that by log of whatever base)
-	push @{$scores1{$matchid}}, $matchscore;
-	# score emission
+	# score emission and transition
 	my $residue = $firstmatches[$pos];
 	if (defined($residues{$residue})) {
 		my $ref = $residues{$residue};
-		push @{$scores1{$matchid}}, $embitscores{$matchid}[$ref]-$embitscores{COMPO}[$ref];		# could always add this to scores1{pos}[0] here
+		#print "$matchid\t", $embitscores{COMPO}[$ref]-$embitscores{$matchid}[$ref], "\t", log(0.99995)/log(2)-$transprobabilities{$previd}[$transitioncodes{$firsttransitions[$prevpos]}], "\n";
+		push @{$scores1{$matchid}}, $embitscores{COMPO}[$ref]-$embitscores{$matchid}[$ref];
+		push @{$scores1{$matchid}}, log(0.99995)/log(2)-$transprobabilities{$previd}[$transitioncodes{$firsttransitions[$prevpos]}];			# need to get an actual null probability and work out the base for the log (just divide that by log of whatever base)
 	}
-	if ($residue eq "_") {
-		push @{$scores1{$matchid}}, $transprobabilities{$matchid}[2]+log(0.99995);
+	elsif ($residue eq "-") {
+		push @{$scores1{$matchid}}, log(0.99995)/log(2)-$transprobabilities{$previd}[2];
 	}
+	else {
+		print "residue not recognised\n";
+	}
+	# score inserts
+	my $runningtotal = 0;
 	foreach my $pos (0..$#{$firstinserts{$matchid}}) {
 		if ($pos == 0) {
 			my $res = $firstinserts{$matchid}[$pos];
-			my $insertscore = $transprobabilities{$matchid}[1]+log(0.99995);
-			my $insemission = $insprobabilities{$matchid}[$residues{$res}]-$embitscores{COMPO}[$residues{$res}];
+			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[1];
+			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
 			push @{$scores1{$matchid}}, $insertscore;
 			push @{$scores1{$matchid}}, $insemission;
+			$runningtotal = $runningtotal+$insertscore+$insemission;
 		}
 		if ($pos != 0) {
 			my $res = $firstinserts{$matchid}[$pos];
-			my $insertscore = $transprobabilities{$matchid}[4]+log(0.99995);
-			my $insemission = $insprobabilities{$matchid}[$residues{$res}]-$embitscores{COMPO}[$residues{$res}];
+			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[4];
+			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
 			push @{$scores1{$matchid}}, $insertscore;
 			push @{$scores1{$matchid}}, $insemission;
+			$runningtotal = $runningtotal+$insertscore+$insemission;
 		}
 	}
 }
+# score last position
 my $seqpos = $#firstmatches;
 my $prevpos = $#firstmatches-1;
 my $hashid = "pos$seqpos";
-#my $matchscore = $transbitscores{$hashid}[$transitioncodes{$firsttransitions[$pos-1]}];
-#push @{$scores1{$hashid}}, $matchscore;
 my $residue = $firstmatches[$seqpos];
 if (defined($residues{$residue})) {
 	my $ref = $residues{$residue};
-	push @{$scores1{$hashid}}, $embitscores{$hashid}[$ref];
+	push @{$scores1{$hashid}}, $embitscores{COMPO}[$residues{$ref}]-$embitscores{$hashid}[$ref];
 }
 
 #print Dumper (\%scores1);
 
-## SCORING THE SECOND SEQUENCE
-#score inserts at the start
-#foreach my $res (@{$secondinserts{pos0}}) {
-#	#print $res, "\n";
-#	# need to sort out how the transition scores work here
-#	my $residue = $residues{$res};
-#	my $matchscore = $insprobabilities{pos0}[$residue]-$embitscores{COMPO}[$residue];
-#	#print $matchscore, "\n";			# seems to be producing a mix of positive and negative values - seems promising
-#	push @{$scores2{pos0}}, $matchscore;
-#}
+# SCORING THE SECOND SEQUENCE
 foreach my $pos (1..$#secondmatches) {
 	my $matchid = "pos$pos";
 	my $prevpos = $pos-1;
 	my $previd = "pos$prevpos";
-#	#score transition
-	my $matchscore = $transprobabilities{$previd}[$transitioncodes{$secondtransitions[$pos]}]+log(0.99995);
-	push @{$scores2{$matchid}}, $matchscore;
-#	# score emission
+	# score emission and transition
 	my $residue = $secondmatches[$pos];
 	if (defined($residues{$residue})) {
 		my $ref = $residues{$residue};
-		push @{$scores2{$matchid}}, $embitscores{$matchid}[$ref]-$embitscores{COMPO}[$ref];
+		push @{$scores2{$matchid}}, $embitscores{COMPO}[$ref]-$embitscores{$matchid}[$ref];
+		push @{$scores2{$matchid}}, log(0.99995)/log(2)-$transprobabilities{$previd}[$transitioncodes{$secondtransitions[$prevpos]}];
 	}
-	if ($residue eq "_") {
-		push @{$scores2{$matchid}}, $transprobabilities{$matchid}[2]+log(0.99995);
+	elsif ($residue eq "-") {
+		push @{$scores2{$matchid}}, log(0.99995)/log(2)-$transprobabilities{$previd}[2];
+	}
+	else {
+		print "residue not recognised\n";
 	}
 	# score any inserts
 	foreach my $pos (0..$#{$secondinserts{$matchid}}) {
-		my $res = $secondinserts{$matchid}[$pos];
-		my $insertscore = $transprobabilities{$matchid}[1]+log(0.99995);
-		my $insemission = $insprobabilities{$matchid}[$residues{$res}]-$embitscores{COMPO}[$residues{$res}];
-		#print $res, "\t", $hashid, "\t", $insertscore, "\t", $insemission, "\n";
-		push @{$scores2{$matchid}}, $insertscore;
-		push @{$scores2{$matchid}}, $insemission;
+		if ($pos == 0) {
+			my $res = $secondinserts{$matchid}[$pos];
+			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[1];
+			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
+			push @{$scores2{$matchid}}, $insertscore;
+			push @{$scores2{$matchid}}, $insemission;
+		}
+		if ($pos != 0) {
+			my $res = $secondinserts{$matchid}[$pos];
+			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[4];			# insert extension
+			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
+			push @{$scores2{$matchid}}, $insertscore;
+			push @{$scores2{$matchid}}, $insemission;
+		}
 	}
 }
 $seqpos = $#secondmatches;
 $prevpos = $#secondmatches-1;
 $hashid = "pos$seqpos";
-#my $matchscore = $transbitscores{$hashid}[$transitioncodes{$secondtransitions[$pos-1]}];
-#push @{$scores2{$hashid}}, $matchscore;
 $residue = $firstmatches[$seqpos];
 if (defined($residues{$residue})) {
 	my $ref = $residues{$residue};
-	push @{$scores2{$hashid}}, $embitscores{$hashid}[$ref];
+	push @{$scores2{$hashid}}, $embitscores{COMPO}[$residues{$ref}]-$embitscores{$hashid}[$ref];
 }
 
 #print Dumper (\%scores2);
@@ -268,7 +269,7 @@ foreach my $pos (1..$#firstmatches) {
 		#print $score, "\t";
 		$total = $total + $score;
 	}
-	push @totalscores1, ($total*(-1));
+	push @totalscores1, $total;
 	#print "\n";
 }
 foreach my $pos (1..$#secondmatches) {
@@ -277,7 +278,7 @@ foreach my $pos (1..$#secondmatches) {
 	foreach my $score (@{$scores2{$key}}) {
 		$total = $total + $score;
 	}
-	push @totalscores2, ($total*(-1));
+	push @totalscores2, $total;
 }
 
 #print Dumper (\@totalscores1);
