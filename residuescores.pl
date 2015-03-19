@@ -285,18 +285,19 @@ foreach my $pos (1..$#secondmatches) {
 #print Dumper (\@totalscores2);
 
 open OUT, "> scores.csv" or die "couldn't create file: $!";
+print OUT $name1, ",";
 foreach my $pos (1..$#firstmatches) {
 	print OUT $firstmatches[$pos], ",";
 }
-print OUT "\n";
+print OUT "\n,";
 foreach my $pos (0..$#totalscores1) {
 	print OUT $totalscores1[$pos], ",";
 }
-print OUT "\n";
+print OUT "\n", $name2, ",";
 foreach my $pos (1..$#secondmatches) {
 	print OUT $secondmatches[$pos], ",";
 }
-print OUT "\n";
+print OUT "\n,";
 foreach my $pos (0..$#totalscores2) {
 	print OUT $totalscores2[$pos], ",";
 }
