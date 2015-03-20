@@ -109,8 +109,8 @@ my @secondtransitions;
 foreach my $point (0..$#states) {
 	if ($states[$point] eq "x") {
 		$lastpoint = $lastpoint+1;
-		my $seqpos = $point + 1;
-		$lastmatch = "pos$seqpos";
+		#my $seqpos = $point + 1;
+		$lastmatch = "pos$lastpoint";
 		push @firstmatches, $firstseq[$point];
 		push @secondmatches, $secondseq[$point];
 		if ($firstseq[$point] eq "-") {
@@ -126,7 +126,7 @@ foreach my $point (0..$#states) {
 			push @secondtransitions, "M";
 		}
 	}
-	if ($states[$point] eq "\.") {
+	elsif ($states[$point] eq "\.") {
 		if ($firstseq[$point] ne "\.") {
 			push @{$firstinserts{$lastmatch}}, uc $firstseq[$point];
 			$firsttransitions[$lastpoint] = "I";			#want to over-write the state for the last point as ending in an insertion
@@ -138,12 +138,7 @@ foreach my $point (0..$#states) {
 	}
 }
 
-#print Dumper (\@firsttransitions);
-#print Dumper (\@secondtransitions);
-#print Dumper (\%firstinserts);
-#print Dumper (\%secondinserts);
-#print Dumper (\@firstmatches);
-#
+
 my %scores1;
 my %scores2;
 
@@ -181,6 +176,7 @@ foreach my $pos (1..$#firstmatches) {		# first position is "B"
 	foreach my $pos (0..$#{$firstinserts{$matchid}}) {
 		if ($pos == 0) {
 			my $res = $firstinserts{$matchid}[$pos];
+			next if ($res eq "*");
 			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[1];
 			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
 			push @{$scores1{$matchid}}, $insertscore;
@@ -189,6 +185,7 @@ foreach my $pos (1..$#firstmatches) {		# first position is "B"
 		}
 		if ($pos != 0) {
 			my $res = $firstinserts{$matchid}[$pos];
+			next if ($res eq "*");
 			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[4];
 			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
 			push @{$scores1{$matchid}}, $insertscore;
@@ -207,7 +204,6 @@ if (defined($residues{$residue})) {
 	push @{$scores1{$hashid}}, $embitscores{COMPO}[$residues{$ref}]-$embitscores{$hashid}[$ref];
 }
 
-#print Dumper (\%scores1);
 
 # SCORING THE SECOND SEQUENCE
 foreach my $pos (1..$#secondmatches) {
@@ -231,6 +227,7 @@ foreach my $pos (1..$#secondmatches) {
 	foreach my $pos (0..$#{$secondinserts{$matchid}}) {
 		if ($pos == 0) {
 			my $res = $secondinserts{$matchid}[$pos];
+			next if ($res eq "*");
 			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[1];
 			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
 			push @{$scores2{$matchid}}, $insertscore;
@@ -238,6 +235,7 @@ foreach my $pos (1..$#secondmatches) {
 		}
 		if ($pos != 0) {
 			my $res = $secondinserts{$matchid}[$pos];
+			next if ($res eq "*");
 			my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[4];			# insert extension
 			my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
 			push @{$scores2{$matchid}}, $insertscore;
@@ -254,7 +252,6 @@ if (defined($residues{$residue})) {
 	push @{$scores2{$hashid}}, $embitscores{COMPO}[$residues{$ref}]-$embitscores{$hashid}[$ref];
 }
 
-#print Dumper (\%scores2);
 
 my @totalscores1;
 my @totalscores2;
@@ -281,8 +278,6 @@ foreach my $pos (1..$#secondmatches) {
 	push @totalscores2, $total;
 }
 
-#print Dumper (\@totalscores1);
-#print Dumper (\@totalscores2);
 
 open OUT, "> scores.csv" or die "couldn't create file: $!";
 print OUT $name1, ",";
