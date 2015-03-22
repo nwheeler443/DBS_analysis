@@ -1,14 +1,16 @@
 #!/usr/bin/perl 
 
+## INPUT: fasta1 fasta2 scan1 scan2 outfile
+
 use warnings;
 use strict; 
 
 my $fasta1 = shift @ARGV;
 my $fasta2 = shift @ARGV;
 
-my $pfamannot1;
+my $pfamannot1 = shift @ARGV;
 #my $pfamannot1 = "$fasta1-pfam_hmmscan1.tbl";
-my $pfamannot2;
+my $pfamannot2 = shift @ARGV;
 #my $pfamannot2 = "$fasta2-pfam_hmmscan1.tbl";
 
 my $hmm_lib_path = "~/Dropbox/scripts";
@@ -55,7 +57,7 @@ print STDERR "Since no ortholog list provided, predicting orthologs with phmmer.
 my $ref;
 $ref = &predict_orths_phmmer($fasta1, $fasta2);
 %orths = %$ref;
-open OUT, ">", "orthlist.dbs";
+open OUT, ">", shift @ARGV;
 foreach my $key (keys(%orths)){
 	print OUT $key,"\t",$orths{$key},"\n";
 }
