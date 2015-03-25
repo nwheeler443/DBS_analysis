@@ -13,6 +13,11 @@ my $pfamannot1 = shift @ARGV;
 my $pfamannot2 = shift @ARGV;
 #my $pfamannot2 = "$fasta2-pfam_hmmscan1.tbl";
 
+system "head $fasta1";
+system "head $fasta2";
+system "head $pfamannot1";
+system "head $pfamannot2";
+
 my $hmm_lib_path = "~/Dropbox/scripts";
 my $tmp_dir = "/tmp";
 
