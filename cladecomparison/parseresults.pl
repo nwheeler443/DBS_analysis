@@ -10,9 +10,10 @@ my @pathogenic = `ls Pathogenic/*/*.scan`;
 my @environmental = `ls Environmental/*/*.scan`;
 my @rhizosphere = `ls Rhizosphere/*/*.scan`;
 
-my $ref = "Environmental/Pfl_Pf0-1_E/Pfl_Pf0-1_E_NC_007492";
-#my $ref = "Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896";
-my $class = "Environmental";
+#my $ref = "Environmental/Pfl_Pf0-1_E/Pfl_Pf0-1_E_NC_007492";
+my $ref = "Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896";
+#my $ref = "Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853";
+my $class = "Rhizosphere";
 
 ### CHOOSING TO GO WITH A SUMMED SCORE ACROSS DOMAINS FOR SIMPLICITY'S SAKE
 
@@ -20,19 +21,19 @@ my %genearchs;
 my %orths;
 
 # domain architectures
-open PATHREP, "path-env.dbs/results.dbs";
+open PATHREP, "path-rhiz.dbs/results.dbs";								# CHANGE
 while (<PATHREP>) {
 	if ($_ =~/#/) {
 		next;
 	}
 my @split = split(/\s+/, $_);
-	push @{$genearchs{$split[1]}{domains}}, $split[2];
+push @{$genearchs{$split[1]}{domains}}, $split[2];					# CHANGE BETWEEN 1 AND 0
 	push @{$genearchs{$split[1]}{scores}}, $split[9];
 $orths{$ref}{$split[1]} = $split[1];		# losing a lot of data at this stage since there are only 1700 unique genes consistent across the pethogen-environmental comparison with Pfam domain hits
 }
 
 # ortholog lookup table
-foreach my $path (@environmental) {
+foreach my $path (@rhizosphere) {										# CHANGE
 	if ($path =~ /($class\/.+\/.+).scan/) {
 		open ORTHS, "$1.orths";
 		my $name = $1;
@@ -49,7 +50,7 @@ foreach my $path (@environmental) {
 my %scores;
 my @pathnames;
 
-foreach my $path (@environmental) {
+foreach my $path (@rhizosphere) {										# CHANGE
 	my $name;
 	if ($path =~ /($class\/.+\/.+).scan/) {
 		$name = $1;
@@ -73,7 +74,7 @@ foreach my $path (@environmental) {
 my %scoresums;
 foreach my $refgene (keys(%{$orths{$ref}})) {
 	foreach my $pos (0..$#pathnames) {
-		push @{$scoresums{$refgene}}, 0;
+		push @{$scoresums{$refgene}}, "NA";
 	}
 }
 
@@ -90,7 +91,7 @@ foreach my $key (keys(%{$orths{$ref}})) {
 	}
 }
 
-open OUT, "> environmentalscores.txt";
+open OUT, "> rhizospherescores.NAs.txt";									# CHANGE
 foreach my $refgene (keys(%scoresums)) {
 	print OUT $refgene;
 	foreach my $pos (0..$#pathnames) {

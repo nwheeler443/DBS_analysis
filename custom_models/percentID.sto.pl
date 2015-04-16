@@ -1,11 +1,6 @@
 #!/usr/bin/perl
 
-# TO DO:
-# get rid of the original naming requirement
-# re-format read-in of alignment
-
 # make sure you align the sequences first!!!
-# have a sequence at the top labelled original
 
 use warnings;
 use strict;
@@ -20,16 +15,18 @@ use Data::Dumper;
 my $filename;
 my @cutoffs;
 
+# send in argumants from another script to indicate input file and cutoff
 foreach my $arg (@ARGV) {
 	print $arg, "\n";
-	if ($arg =~ /^(jackhmmerresults\/\S+.hits)\n.(\S+)$/) {
+	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)$/) {
 		$filename = $1;
 		@cutoffs = $2;
 	}
-	else {print "wrong\n"}
+	else {print "wrong argument input\n"}
 }
 
 my %sequences;
+my %gaps;
 my $seqname;
 my $original = "";
 
@@ -39,27 +36,34 @@ while(<IN>) {
 	if ($_ =~ /=GF\ ID\ (\S+)-i\d/) {
 		$original = $1;
 	}
-	elsif ($_ =~ /#/) {
+	elsif ($_ =~ /^#/) {
 		next;
 	}
-else {
-	if ($_ =~ /(\S+)\s+(\S+)$/){
-		push @{$sequences{$1}}, split("", $2);
+	elsif ($_ =~ /(\S+)\s+(\S+)$/){
+		my @line = split("", $2);
+		foreach my $res (@line) {
+			if (isAA ($res)) {
+				push @{$gaps{$1}}, 0;
+			}
+			else {
+				push @{$gaps{$1}}, 1;
+			}
+		}
+		push @{$sequences{$1}}, @line;
 	}
 }
-}
+
 close IN;
 
 #print Dumper (\%sequences);
 
+# create a new file for each cutoff and print original sequence to it
 foreach my $cut (@cutoffs) {
     my $outfile = "filtered/$original.$cut.fasta";
     open OUT, ">", $outfile;
     print OUT ">$original\n";
     foreach my $res (0..$#{$sequences{$original}}) {
-        if (isAA($sequences{$original}[$res])) {
-            print OUT $sequences{$original}[$res];
-        }
+        print OUT $sequences{$original}[$res];
     }
     print OUT "\n";
     close OUT;
@@ -67,6 +71,7 @@ foreach my $cut (@cutoffs) {
 
 my %overthreshold;
 
+# go through each hit and determine the percentage identity
 open PIDS, "> troubleshooting/$original.pids.txt";
 my %matchcounts;
 foreach my $seq (keys(%sequences)){
@@ -74,25 +79,22 @@ foreach my $seq (keys(%sequences)){
     my $alignmentlength = $#{$sequences{$original}} + 1;
     $matchcounts{$seq}=0;
     foreach my $residue (0..$#{$sequences{$original}}) {
-        if (isAA ($sequences{$original}[$residue]) && isAA ($sequences{$seq}[$residue]) && uc $sequences{$original}[$residue] eq uc $sequences{$seq}[$residue]) {
+		if ($gaps{$original}[$residue] == 1 && $gaps{$seq}[$residue] == 1) {
+			$alignmentlength--;
+		}
+		elsif (uc $sequences{$original}[$residue] eq uc $sequences{$seq}[$residue]) {
             $matchcounts{$seq}++;
         }
-        elsif ( !isAA ($sequences{$original}[$residue]) && !isAA($sequences{$seq}[$residue]) ) {
-            $alignmentlength--;
-        }
-        
     }
-	#print $alignmentlength;
+	my $percentid = $matchcounts{$seq}/$alignmentlength;
     printf PIDS "%0.2f\t$seq\n", ($matchcounts{$seq}/$alignmentlength*100);
     foreach my $cut (@cutoffs) {
         my $outfile = "filtered/$original.$cut.fasta";
         open OUT, ">>", $outfile;
-        if(($matchcounts{$seq}/$alignmentlength)>$cut) {
+        if($percentid>$cut) {
             print OUT ">$seq\n";
             foreach my $res (0..$#{$sequences{$seq}}) {
-                if (isAA ($sequences{$seq}[$res])) {
-                    print OUT $sequences{$seq}[$res];
-                }
+				print OUT $sequences{$seq}[$res];
             }
            print OUT "\n";
         }
@@ -101,13 +103,18 @@ foreach my $seq (keys(%sequences)){
 }
 close PIDS;
 
+# remove columns with all gaps to produce aligned file
+foreach my $cut (@cutoffs) {
+	system "esl-reformat --mingap afa filtered/$original.$cut.fasta > filtered/$original.$cut.fasta";
+}
+
 ############################
 #isAA: check if single character belongs to the IUPAC amino-acid code.
 sub isAA {
     
     my $aa = shift;
     return 0 if (not defined($aa) or length($aa) != 1);
-    my $iupac = 'ABCDEFGHIKLMNPQRSTVWXYZ';
+    my $iupac = 'ABCDEFGHIKLMNPQRSTVWXY';
     
     if ($aa=~/[$iupac]/i){
         return 1;
