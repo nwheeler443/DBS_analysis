@@ -26,10 +26,9 @@ kstable$p.adj = p.adjust(kstable$p.val, method="BH", n=nrow(pathscores))
 kstable$z.score = (kstable$DBS-0)/sd(kstable$DBS)
 kstable$DBS.p.value = 2*pnorm(-abs(kstable$z.score))
 kstable$DBS.p.adj = p.adjust(kstable$DBS.p.val, method="BH", n=nrow(pathscores))
-kstable <- kstable[,c(1,2,3,5,4,6,7,8)]
 
 write.table(kstable, file="path-env.NAs.ksvalues", quote=F, row.names=F, col.names=T, sep="\t")
-write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.val<0.05,1], file="path-env.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
+write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.adj<0.05,1], file="path-env.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
 
 pathrhiz <- read.delim("path-rhiz.dbs/orthlist.dbs", header=F, stringsAsFactors=F)
 
@@ -59,10 +58,9 @@ kstable$p.adj = p.adjust(kstable$p.val, method="BH", n=nrow(pathscores))
 kstable$z.score = (kstable$DBS-0)/sd(kstable$DBS)
 kstable$DBS.p.value = 2*pnorm(-abs(kstable$z.score))
 kstable$DBS.p.adj = p.adjust(kstable$DBS.p.val, method="BH", n=nrow(pathscores))
-kstable <- kstable[,c(1,2,3,5,4,6,7,8)]
 
 write.table(kstable, file="path-rhiz.NAs.ksvalues", quote=F, row.names=F, col.names=T, sep="\t")
-write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.val<0.05,1], file="path-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
+write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.adj<0.05,1], file="path-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
 
 envrhiz <- read.table("env-rhiz.dbs/orthlist.dbs", header=F, stringsAsFactors=F)
 
@@ -92,8 +90,7 @@ kstable$p.adj = p.adjust(kstable$p.val, method="BH", n=nrow(envscores))
 kstable$z.score = (kstable$DBS-0)/sd(kstable$DBS)
 kstable$DBS.p.value = 2*pnorm(-abs(kstable$z.score))
 kstable$DBS.p.adj = p.adjust(kstable$DBS.p.val, method="BH", n=nrow(pathscores))
-kstable <- kstable[,c(1,2,3,5,4,6,7,8)]
 
 write.table(kstable, file="env-rhiz.NAs.ksvalues", quote=F, row.names=F, col.names=T, sep="\t")
-write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.val<0.05,1], file="env-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
+write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.adj<0.05,1], file="env-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
 

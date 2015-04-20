@@ -38,6 +38,8 @@ while (min(lengths) != length(dbstrim)) {
 }
 kstable$z.score = (kstable$DBS-0)/sd(dbstrim)
 kstable$DBS.p.value = 2*pnorm(-abs(kstable$z.score))
+kstable$DBS.p.adj = p.adjust(kstable$DBS.p.val, method="BH", n=nrow(pathscores))
+kstable <- kstable[,c(1,2,3,5,4,6,7,8)]
 
 dist <- rnorm(n=500000, mean=0, sd=sd(dbstrim))
 distdens <- density(dist, bw=0.3)
@@ -48,7 +50,7 @@ lines(distdens, col="coral4", lwd=2)
 dev.off()
 
 write.table(kstable, file="path-env.NAs.ksvalues", quote=F, row.names=F, col.names=T, sep="\t")
-write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.val<0.05,1], file="path-env.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
+write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.adj<0.05,1], file="path-env.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
 
 kstable <- data.frame()
 for (orth in 1:nrow(pathrhiz)) {
@@ -77,6 +79,8 @@ while (min(lengths) != length(dbstrim)) {
 }
 kstable$z.score = (kstable$DBS-0)/sd(dbstrim)
 kstable$DBS.p.value = 2*pnorm(-abs(kstable$z.score))
+kstable$DBS.p.adj = p.adjust(kstable$DBS.p.val, method="BH", n=nrow(pathscores))
+kstable <- kstable[,c(1,2,3,5,4,6,7,8)]
 
 dist <- rnorm(n=500000, mean=0, sd=sd(dbstrim))
 distdens <- density(dist, bw=0.3)
@@ -87,7 +91,7 @@ lines(distdens, col="coral4", lwd=2)
 dev.off()
 
 write.table(kstable, file="path-rhiz.NAs.ksvalues", quote=F, row.names=F, col.names=T, sep="\t")
-write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.val<0.05,1], file="path-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
+write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.adj<0.05,1], file="path-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
 
 envrhiz <- read.table("env-rhiz.dbs/orthlist.dbs", header=F, stringsAsFactors=F)
 
@@ -123,6 +127,8 @@ while (min(lengths) != length(dbstrim)) {
 }
 kstable$z.score = (kstable$DBS-0)/sd(dbstrim)
 kstable$DBS.p.value = 2*pnorm(-abs(kstable$z.score))
+kstable$DBS.p.adj = p.adjust(kstable$DBS.p.val, method="BH", n=nrow(pathscores))
+kstable <- kstable[,c(1,2,3,5,4,6,7,8)]
 
 dist <- rnorm(n=500000, mean=0, sd=sd(dbstrim))
 distdens <- density(dist, bw=0.3)
@@ -133,5 +139,5 @@ lines(distdens, col="coral4", lwd=2)
 dev.off()
 
 write.table(kstable, file="env-rhiz.NAs.ksvalues", quote=F, row.names=F, col.names=T, sep="\t")
-write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.val<0.05,1], file="env-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
+write.table(kstable[kstable$p.adj<0.05&kstable$DBS.p.adj<0.05,1], file="env-rhiz.NAs.siggenes", quote=F, col.names=F, row.names=F, sep="\t")
 
