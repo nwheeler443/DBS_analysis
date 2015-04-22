@@ -18,13 +18,12 @@ my @cutoffs;
 # send in argumants from another script to indicate input file and cutoff
 foreach my $arg (@ARGV) {
 	print $arg, "\n";
-	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)$/) {
+	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)$/) {			# need to add an output directory option
 		$filename = $1;
 		@cutoffs = $2;
 	}
 	else {print "wrong argument input\n"}
 }
-
 my %sequences;
 my %gaps;
 my $seqname;
@@ -55,12 +54,12 @@ while(<IN>) {
 
 close IN;
 
-#print Dumper (\%sequences);
+#print Dumper (\@{$sequences{$original}});
 
 # create a new file for each cutoff and print original sequence to it
 foreach my $cut (@cutoffs) {
-    my $outfile = "filtered/$original.$cut.fasta";
-    open OUT, ">", $outfile;
+    my $outfile = "filteredTF/$original.$cut.fasta";
+    open OUT, "> $outfile";
     print OUT ">$original\n";
     foreach my $res (0..$#{$sequences{$original}}) {
         print OUT $sequences{$original}[$res];
@@ -89,8 +88,8 @@ foreach my $seq (keys(%sequences)){
 	my $percentid = $matchcounts{$seq}/$alignmentlength;
     printf PIDS "%0.2f\t$seq\n", ($matchcounts{$seq}/$alignmentlength*100);
     foreach my $cut (@cutoffs) {
-        my $outfile = "filtered/$original.$cut.fasta";
-        open OUT, ">>", $outfile;
+        my $outfile = "filteredTF/$original.$cut.fasta";
+        open OUT, ">> $outfile";
         if($percentid>$cut) {
             print OUT ">$seq\n";
             foreach my $res (0..$#{$sequences{$seq}}) {
@@ -105,7 +104,7 @@ close PIDS;
 
 # remove columns with all gaps to produce aligned file
 foreach my $cut (@cutoffs) {
-	system "esl-reformat --mingap afa filtered/$original.$cut.fasta > filtered/$original.$cut.fasta";
+	system "esl-reformat --mingap --informat afa filteredTF/$original.$cut.fasta > filteredTF/$original.$cut.fasta";
 }
 
 ############################
@@ -119,7 +118,8 @@ sub isAA {
     if ($aa=~/[$iupac]/i){
         return 1;
     }
-    
-    return 0;
+	else {
+		return 0;
+	}
 }
 

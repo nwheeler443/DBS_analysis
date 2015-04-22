@@ -28,37 +28,40 @@ genes <- genes[order(genes)]
 #}
 
 png("T3SSgenes.avr.png", width=1000, height=500)
-par(mar=c(7,5,3,5), cex=1.5)
+par(mar=c(7,5,3,9), cex=1.5, xpd=T)
 plot(1,0,xlim=c(0,9), ylim=c(0,1500), col="white", xaxt="n", ylab="Bitscore", xlab="", cex.axis=1.4, cex.lab=1.4)
 for (i in 1:10) {
 	gene <- genes[i]
-	points(x=rep(i-1.2, length(pathscores2[!is.na(pathscores2[,gene]),gene])), y=pathscores2[!is.na(pathscores2[,gene]),gene], pch=16, col="black")
+	points(x=rep(i-1.2, length(pathscores2[!is.na(pathscores2[,gene]),gene])), y=pathscores2[!is.na(pathscores2[,gene]),gene], pch=16, col="coral4")
 	points(x=rep(i-1, length(rhizscores2[!is.na(rhizscores2[,gene]),gene])), y=rhizscores2[!is.na(rhizscores2[,gene]),gene], pch=16, col="navy")
-	points(x=rep(i-0.8, length(envscores2[!is.na(envscores2[,gene]),gene])), y=envscores2[!is.na(envscores2[,gene]),gene], pch=16, col="coral4")
+	points(x=rep(i-0.8, length(envscores2[!is.na(envscores2[,gene]),gene])), y=envscores2[!is.na(envscores2[,gene]),gene], pch=16, col="black")
+	legend(x=9.5, y=1000, fill=c("coral4", "navy", "black"), legend=c("Pathogenic", "Rhizosphere", "Environmental"))
 }
 axis(side=1, at=(0:9), labels=genes[0:10], las=2, cex.axis=1.4)
 dev.off()
 
 png("T3SSgenes.hop1.png", width=1000, height=500)
-par(mar=c(7,5,3,5), cex=1.5)
+par(mar=c(7,5,3,9), cex=1.5, xpd=T)
 plot(1,0,xlim=c(0,11), ylim=c(0,1500), col="white", xaxt="n", ylab="Bitscore", xlab="", cex.axis=1.4, cex.lab=1.4)
 for (i in 11:22) {
 	gene <- genes[i]
-	points(x=rep(i-11.2, length(pathscores2[!is.na(pathscores2[,gene]),gene])), y=pathscores2[!is.na(pathscores2[,gene]),gene], pch=16, col="black")
+	points(x=rep(i-11.2, length(pathscores2[!is.na(pathscores2[,gene]),gene])), y=pathscores2[!is.na(pathscores2[,gene]),gene], pch=16, col="coral4")
 	points(x=rep(i-11, length(rhizscores2[!is.na(rhizscores2[,gene]),gene])), y=rhizscores2[!is.na(rhizscores2[,gene]),gene], pch=16, col="navy")
-	points(x=rep(i-10.8, length(envscores2[!is.na(envscores2[,gene]),gene])), y=envscores2[!is.na(envscores2[,gene]),gene], pch=16, col="coral4")
+	points(x=rep(i-10.8, length(envscores2[!is.na(envscores2[,gene]),gene])), y=envscores2[!is.na(envscores2[,gene]),gene], pch=16, col="black")
+	legend(11.5, 1000, fill=c("coral4", "navy", "black"), legend=c("Pathogenic", "Rhizosphere", "Environmental"))
 }
 axis(side=1, at=(0:11), labels=genes[11:22], las=2, cex.axis=1.4)
 dev.off()
 
 png("T3SSgenes.hop2.png", width=1000, height=500)
-par(mar=c(7,5,3,5), cex=1.5)
+par(mar=c(7,5,3,9), cex=1.5, xpd=T)
 plot(1,0,xlim=c(0,13), ylim=c(0,1500), col="white", xaxt="n", ylab="Bitscore", xlab="", cex.axis=1.4, cex.lab=1.4)
 for (i in 23:length(genes)) {
 	gene <- genes[i]
-	points(x=rep(i-23.2, length(pathscores2[!is.na(pathscores2[,gene]),gene])), y=pathscores2[!is.na(pathscores2[,gene]),gene], pch=16, col="black")
+	points(x=rep(i-23.2, length(pathscores2[!is.na(pathscores2[,gene]),gene])), y=pathscores2[!is.na(pathscores2[,gene]),gene], pch=16, col="coral4")
 	points(x=rep(i-23, length(rhizscores2[!is.na(rhizscores2[,gene]),gene])), y=rhizscores2[!is.na(rhizscores2[,gene]),gene], pch=16, col="navy")
-	points(x=rep(i-22.8, length(envscores2[!is.na(envscores2[,gene]),gene])), y=envscores2[!is.na(envscores2[,gene]),gene], pch=16, col="coral4")
+	points(x=rep(i-22.8, length(envscores2[!is.na(envscores2[,gene]),gene])), y=envscores2[!is.na(envscores2[,gene]),gene], pch=16, col="black")
+	legend(13.8, 1000, fill=c("coral4", "navy", "black"), legend=c("Pathogenic", "Rhizosphere", "Environmental"))
 }
 axis(side=1, at=(0:13), labels=genes[23:length(genes)], las=2, cex.axis=1.4)
 dev.off()
