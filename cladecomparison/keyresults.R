@@ -18,11 +18,11 @@ for (orth in 1:nrow(pathenv)) {
 		set2 <- envscores2[,pathenv[orth,2]]
 		ksval = ks.test(set1, set2, exact=FALSE)
 		DBS = median(set1, na.rm=T)-median(set2, na.rm=T)
-		if(ksval$statistic>0.9&abs(DBS)>50) {
-			png(paste("boxplots/NAs/", pathenv[orth,1], ".png", sep=""))
-			boxplot(set1,set2, names=c("pathogenic", "environmental"))
-			dev.off()
-		}
+#		if(ksval$statistic>0.9&abs(DBS)>50) {
+#			png(paste("boxplots/NAs/", pathenv[orth,1], ".png", sep=""))
+#			boxplot(set1,set2, names=c("pathogenic", "environmental"))
+#			dev.off()
+#		}
 		ksrow <- data.frame(gene.name=pathenv[orth,1], statistic=as.numeric(ksval$statistic), p.val=ksval$p.value, DBS=DBS)
 		kstable <- rbind(kstable, ksrow)
 	}
@@ -59,11 +59,11 @@ for (orth in 1:nrow(pathrhiz)) {
 		set2 <- rhizscores2[,pathrhiz[orth,2]]
 		ksval = ks.test(set1, set2, exact=FALSE)
 		DBS = median(set1, na.rm=T)-median(set2, na.rm=T)
-		if(ksval$statistic>0.9&abs(DBS)>50) {
-			png(paste("boxplots/NAs/", pathrhiz[orth,1], ".png", sep=""))
-			boxplot(set1,set2, names=c("pathogenic", "rhizosphere"))
-			dev.off()
-		}
+#		if(ksval$statistic>0.9&abs(DBS)>50) {
+#			png(paste("boxplots/NAs/", pathrhiz[orth,1], ".png", sep=""))
+#			boxplot(set1,set2, names=c("pathogenic", "rhizosphere"))
+#			dev.off()
+#		}
 		ksrow <- data.frame(gene.name=pathrhiz[orth,1], statistic=as.numeric(ksval$statistic), p.val=ksval$p.value, DBS=DBS)
 		kstable <- rbind(kstable, ksrow)
 	}
@@ -107,11 +107,11 @@ for (orth in 1:nrow(envrhiz)) {
 		set2 <- rhizscores2[,envrhiz[orth,2]]
 		ksval = ks.test(set1, set2, exact=FALSE)
 		DBS = median(set1, na.rm=T)-median(set2, na.rm=T)
-		if(ksval$statistic>0.9&abs(DBS)>50) {
-			png(paste("boxplots/NAs/", envrhiz[orth,1], ".png", sep=""))
-			boxplot(set1,set2, names=c("environmental", "rhizosphere"))
-			dev.off()
-		}
+#		if(ksval$statistic>0.9&abs(DBS)>50) {
+#			png(paste("boxplots/NAs/", envrhiz[orth,1], ".png", sep=""))
+#			boxplot(set1,set2, names=c("environmental", "rhizosphere"))
+#			dev.off()
+#		}
 		ksrow <- data.frame(gene.name=envrhiz[orth,1], statistic=as.numeric(ksval$statistic), p.val=ksval$p.value, DBS=DBS)
 		kstable <- rbind(kstable, ksrow)
 	}
