@@ -38,13 +38,6 @@ while (<FAA>) {
 	}
 }
 
-my @genesofinterest;
-open PATHENV, "path-env.siggenes";
-while (<PATHENV>) {
-	chomp;
-	push @genesofinterest, $_;
-}
-
 open FAA, "Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853.faa";
 open OUT, "> path-env.genes";
 while (<FAA>) {
@@ -53,13 +46,6 @@ while (<FAA>) {
 			print OUT "$1\t$2\n";
 		}
 	}
-}
-
-my @genesofinterest2;
-open PATHENV, "path-rhiz.siggenes";
-while (<PATHENV>) {
-	chomp;
-	push @genesofinterest2, $_;
 }
 
 open FAA, "Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853.faa";

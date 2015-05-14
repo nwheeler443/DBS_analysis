@@ -4,11 +4,11 @@
 pathenv <- read.delim("path-env.dbs/orthlist.dbs", header=F, stringsAsFactors=F)
 pathrhiz <- read.delim("path-rhiz.dbs/orthlist.dbs", header=F, stringsAsFactors=F)
 
-pathscores <- read.delim("pathogenscores.NAs.txt", header=F, row.names=1, stringsAsFactors=F)
+pathscores <- read.delim("Pathogenic.scores.NAs.txt", header=T, row.names=1, stringsAsFactors=F)
 pathscores2 <- t(pathscores)
-envscores <- read.delim("environmentalscores.NAs.txt", header=F, row.names=1, stringsAsFactors=F)
+envscores <- read.delim("Environmental.scores.NAs.txt", header=T, row.names=1, stringsAsFactors=F)
 envscores2 <- t(envscores)
-rhizscores <- read.delim("rhizospherescores.NAs.txt", header=F, row.names=1, stringsAsFactors=F)
+rhizscores <- read.delim("Rhizosphere.scores.NAs.txt", header=T, row.names=1, stringsAsFactors=F)
 rhizscores2 <- t(rhizscores)
 
 set1 <- vector()

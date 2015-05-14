@@ -8,45 +8,62 @@ my @pathogenic = `ls Pathogenic/*/*.scan`;
 my @environmental = `ls Environmental/*/*.scan`;
 my @rhizosphere = `ls Rhizosphere/*/*.scan`;
 
+foreach my $file (@pathogenic) {
+	eslindex($file);
+}
+foreach my $file (@environmental) {
+	eslindex($file);
+}
+foreach my $file (@rhizosphere) {
+	eslindex($file);
+}
+sub eslindex {
+	my $file = $_[0];
+	if ($file =~ /(.+\/.+\/.+).scan/) {
+		my $fileID = $1;
+		system "esl-sfetch --index $fileID.faa";
+	}
+}
+
 sub aligngenes {
-	my $gene = $_[0];
+	my $geneofinterest = $_[0];
 	open OUT, "> queryfile.faa";
 	
 	foreach my $path (@pathogenic) {
 		if ($path =~ /(Pathogenic\/.+\/.+).scan/) {
 			my $fileID = $1;
-			system "esl-sfetch --index $fileID.faa";
 			if (-e "$fileID.orths") {
 				open ORTHS, "$1.orths";
 				while (<ORTHS>) {
 					if ($_ =~ /(\S+)\s+(\S+)/) {
 						if ($1 eq $geneofinterest) {
-							print OUT `esl-sfetch $fileID.faa "$2"` or die "failed to find seq $!";
+							print OUT `esl-sfetch -n "path-$1" $fileID.faa "$2"` or die "failed to find seq $!";
 						}
 					}
 				}
 				close ORTHS;
 			}
 			else {
-				print OUT `esl-sfetch $fileID.faa "$geneofinterest"`;
+				print OUT `esl-sfetch -n "path-$1" $fileID.faa "$geneofinterest"`;
 			}
 		}
 	}
 	
 	print OUT "#####\n";
 	
-	foreach my $file (@environmental) {
-		fetchseq($geneofinterest, $file);
-	}
 	foreach my $file (@rhizosphere) {
-		fetchseq)$geneofinterest, $file);
+		fetchseq($geneofinterest, $file, "rhiz");
+	}
+	foreach my $file (@environmental) {
+		fetchseq($geneofinterest, $file, "env");
 	}
 	
 	sub fetchseq {
-#		my $geneofinterest = $_[0];
-#		my $file = $_[1];
+		my $geneofinterest = $_[0];
+		my $file = $_[1];
+		my $prefix = $_[2];
 		my $refname;
-		open ORTHLIST, "path-env.dbs/orthlist.dbs";
+		open ORTHLIST, "path-$prefix.dbs/orthlist.dbs";
 		while (<ORTHLIST>) {
 			if ($_ =~ /(\S+)\s+(\S+)/) {
 				if ($1 eq $geneofinterest) {
@@ -54,23 +71,21 @@ sub aligngenes {
 				}
 			}
 		}
-			if ($file =~ /(.+\/.+\/.+).scan/) {
-				my $fileID = $1;
-				system "esl-sfetch --index $fileID.faa";
-				if (-e "$fileID.orths") {
-					open ORTHS, "$1.orths";
-					while (<ORTHS>) {
-						if ($_ =~ /(\S+)\s+(\S+)/) {
-							if ($1 eq $refname) {
-								print OUT `esl-sfetch $fileID.faa "$2"` or die "failed to find seq $!";
-							}
+		if ($file =~ /(.+\/.+\/.+).scan/) {
+			my $fileID = $1;
+			if (-e "$fileID.orths") {
+				open ORTHS, "$1.orths";
+				while (<ORTHS>) {
+					if ($_ =~ /(\S+)\s+(\S+)/) {
+						if ($1 eq $refname) {
+							print OUT `esl-sfetch -n "$prefix-$1" $fileID.faa "$2"` or die "failed to find seq $!";
 						}
 					}
-					close ORTHS;
 				}
-				else {
-					print OUT `esl-sfetch $fileID.faa "$refname"`;
-				}
+				close ORTHS;
+			}
+			else {
+				print OUT `esl-sfetch -n "$prefix-$refname" $fileID.faa "$refname"`;
 			}
 		}
 	}
@@ -80,7 +95,7 @@ sub aligngenes {
 		$filename = $1;
 	}
 	print "\n\n$filename\n\n";
-	system "mafft queryfile.faa > alignments/$comparison-$filename.afa";
+	system "mafft queryfile.faa > alignments/$filename.afa";
 }
 
 my @querygenes;
@@ -93,7 +108,12 @@ close IN;
 open IN, "path-rhiz.NAs.siggenes";
 while (<IN>) {
 	chomp;
-	push @querygenes, $_;
+	if ($_ ~~ @querygenes) {
+		next;
+	}
+	else {
+		push @querygenes, $_;
+	}
 }
 close IN;
 
