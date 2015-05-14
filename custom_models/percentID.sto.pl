@@ -17,7 +17,7 @@ my @cutoffs;
 
 # send in argumants from another script to indicate input file and cutoff
 foreach my $arg (@ARGV) {
-	print $arg, "\n";
+	print $arg, "\t";
 	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)$/) {			# need to add an output directory option
 		$filename = $1;
 		@cutoffs = $2;
@@ -26,6 +26,7 @@ foreach my $arg (@ARGV) {
 }
 my %sequences;
 my %gaps;
+my %percentids;
 my $seqname;
 my $original = "";
 
@@ -54,57 +55,65 @@ while(<IN>) {
 
 close IN;
 
+my @nseq = keys(%sequences);
+print "n=$#nseq\tl=$#{$sequences{$nseq[0]}}\n";
+
 #print Dumper (\@{$sequences{$original}});
 
 # create a new file for each cutoff and print original sequence to it
-foreach my $cut (@cutoffs) {
-    my $outfile = "filteredTF/$original.$cut.fasta";
-    open OUT, "> $outfile";
-    print OUT ">$original\n";
-    foreach my $res (0..$#{$sequences{$original}}) {
-        print OUT $sequences{$original}[$res];
-    }
-    print OUT "\n";
-    close OUT;
-}
 
 my %overthreshold;
 
 # go through each hit and determine the percentage identity
 open PIDS, "> troubleshooting/$original.pids.txt";
 my %matchcounts;
+my $count = 0;
 foreach my $seq (keys(%sequences)){
-    next if ($seq eq "$original");
-    my $alignmentlength = $#{$sequences{$original}} + 1;
-    $matchcounts{$seq}=0;
-    foreach my $residue (0..$#{$sequences{$original}}) {
-		if ($gaps{$original}[$residue] == 1 && $gaps{$seq}[$residue] == 1) {
-			$alignmentlength--;
+	if ($count < 250) {
+		next if ($seq eq "$original");
+		my $alignmentlength = $#{$sequences{$original}} + 1;
+		$matchcounts{$seq}=0;
+		foreach my $residue (0..$#{$sequences{$original}}) {
+			if ($gaps{$original}[$residue] == 1 && $gaps{$seq}[$residue] == 1) {
+				$alignmentlength--;
+			}
+			elsif (uc $sequences{$original}[$residue] eq uc $sequences{$seq}[$residue]) {
+				$matchcounts{$seq}++;
+			}
 		}
-		elsif (uc $sequences{$original}[$residue] eq uc $sequences{$seq}[$residue]) {
-            $matchcounts{$seq}++;
-        }
-    }
-	my $percentid = $matchcounts{$seq}/$alignmentlength;
-    printf PIDS "%0.2f\t$seq\n", ($matchcounts{$seq}/$alignmentlength*100);
-    foreach my $cut (@cutoffs) {
-        my $outfile = "filteredTF/$original.$cut.fasta";
-        open OUT, ">> $outfile";
-        if($percentid>$cut) {
-            print OUT ">$seq\n";
-            foreach my $res (0..$#{$sequences{$seq}}) {
-				print OUT $sequences{$seq}[$res];
-            }
-           print OUT "\n";
-        }
-        close OUT;
-    }
+		my $percentid = $matchcounts{$seq}/$alignmentlength;
+		$percentids{$seq} = $percentid;
+		if ($percentid > 0.35) {
+			$count++;
+		}
+		printf PIDS "%0.2f\t$seq\n", ($matchcounts{$seq}/$alignmentlength*100);
+	}
 }
 close PIDS;
 
+#produce output file once all PIDs have been calculated
+foreach my $cut (@cutoffs) {
+	my $outfile = "filteredTF/$original.$cut.fasta";
+	open OUT, "> $outfile";
+	print OUT ">$original\n";
+	foreach my $res (0..$#{$sequences{$original}}) {
+		print OUT $sequences{$original}[$res];
+	}
+	print OUT "\n";
+	foreach my $seq (keys(%percentids)) {
+		if($percentids{$seq}>$cut) {
+			print OUT ">$seq\n";
+			foreach my $res (0..$#{$sequences{$seq}}) {
+				print OUT $sequences{$seq}[$res];
+			}
+			print OUT "\n";
+		}
+	}
+}
+
 # remove columns with all gaps to produce aligned file
 foreach my $cut (@cutoffs) {
-	system "esl-reformat --mingap --informat afa filteredTF/$original.$cut.fasta > filteredTF/$original.$cut.fasta";
+	system "esl-reformat --mingap afa filteredTF/$original.$cut.fasta > filteredTF/$original.afa";
 }
 
 ############################

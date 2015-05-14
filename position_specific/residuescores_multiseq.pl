@@ -88,8 +88,6 @@ my %transitions;
 
 my $lastmatch = "pos0";
 my $lastpoint = 0;
-#my @firstmatches = ("B");
-#my @secondmatches = ("B");
 
 foreach my $key (keys(%sequences)) {
 	@{$matches{$key}}[0] = "B";
@@ -136,11 +134,11 @@ foreach my $key (keys(%sequences)) {
 		my $residue = $matches{$key}[$pos];
 		if (defined($residues{$residue})) {
 			my $ref = $residues{$residue};
-			push @{$scores{$key}{$matchid}}, $embitscores{COMPO}[$ref]-$embitscores{$matchid}[$ref];
-			push @{$scores{$key}{$matchid}}, log(0.99995)/log(2)-$transprobabilities{$previd}[$transitioncodes{$transitions{$key}[$prevpos]}];			# need to get an actual null probability and work out the base for the log (just divide that by log of whatever base)
+			push @{$scores{$key}{$matchid}}, $embitscores{$matchid}[$ref];
+			push @{$scores{$key}{$matchid}}, $transprobabilities{$previd}[$transitioncodes{$transitions{$key}[$prevpos]}];
 		}
 		elsif ($residue eq "-") {
-			push @{$scores{$key}{$matchid}}, log(0.99995)/log(2)-$transprobabilities{$previd}[2];
+			push @{$scores{$key}{$matchid}}, $transprobabilities{$previd}[2];
 		}
 		else {
 			print "residue not recognised\n";
@@ -150,16 +148,16 @@ foreach my $key (keys(%sequences)) {
 			if ($pos == 0) {
 				my $res = $inserts{$key}{$matchid}[$pos];
 				next if ($res eq "*");
-				my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[1];
-				my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
+				my $insertscore = $transprobabilities{$previd}[1];
+				my $insemission = $insprobabilities{$matchid}[$residues{$res}];
 				push @{$scores{$key}{$matchid}}, $insertscore;
 				push @{$scores{$key}{$matchid}}, $insemission;
 			}
 			if ($pos != 0) {
 				my $res = $inserts{$key}{$matchid}[$pos];
 				next if ($res eq "*");
-				my $insertscore = log(0.99995)/log(2)-$transprobabilities{$previd}[4];
-				my $insemission = $embitscores{COMPO}[$residues{$res}]-$insprobabilities{$matchid}[$residues{$res}];
+				my $insertscore = $transprobabilities{$previd}[4];
+				my $insemission = $insprobabilities{$matchid}[$residues{$res}];
 				push @{$scores{$key}{$matchid}}, $insertscore;
 				push @{$scores{$key}{$matchid}}, $insemission;
 			}
@@ -172,7 +170,7 @@ foreach my $key (keys(%sequences)) {
 	my $residue = $matches{$key}[$seqpos];
 	if (defined($residues{$residue})) {
 		my $ref = $residues{$residue};
-		push @{$scores{$key}{$hashid}}, $embitscores{COMPO}[$residues{$ref}]-$embitscores{$hashid}[$ref];
+		push @{$scores{$key}{$hashid}}, $embitscores{$hashid}[$ref];
 	}
 }
 

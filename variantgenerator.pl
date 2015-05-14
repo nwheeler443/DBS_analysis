@@ -7,7 +7,7 @@ use strict;
 use Data::Dumper;
 
 my %variants;
-open IN, "uniprot.humsavar.2011_09.provean.scored";
+open IN, "uniprot.humsavar.2011_09.provean.scored";			# only includes genes that were scored by provean
 while (<IN>) {
 	if ($_ =~ /^(\S+)\s+(\S+)/) {
 		push @{$variants{$1}}, $2;
