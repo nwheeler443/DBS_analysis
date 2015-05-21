@@ -2,7 +2,7 @@
 
 2) orthlists uses these to produce lists of orthologous proteins, using one representative from each group as a comparator
 
-2b) run dbs on representatives form each group
+2b) run dbs on representatives from each group
 
 3) parse results produces a score table for each gene in the ortholog list for each isolate
 

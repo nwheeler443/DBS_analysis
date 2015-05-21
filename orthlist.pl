@@ -9,16 +9,14 @@ my $fasta1 = shift @ARGV;
 my $fasta2 = shift @ARGV;
 
 my $pfamannot1 = shift @ARGV;
-#my $pfamannot1 = "$fasta1-pfam_hmmscan1.tbl";
 my $pfamannot2 = shift @ARGV;
-#my $pfamannot2 = "$fasta2-pfam_hmmscan1.tbl";
 
-system "head $fasta1";
-system "head $fasta2";
-system "head $pfamannot1";
-system "head $pfamannot2";
+#system "head $fasta1";
+#system "head $fasta2";
+#system "head $pfamannot1";
+#system "head $pfamannot2";
 
-my $hmm_lib_path = "~/Dropbox/scripts";
+my $hmm_lib_path = "~/Dropbox/scripts/bigfiles";
 my $tmp_dir = "/tmp";
 
 if(not defined($pfamannot1)){

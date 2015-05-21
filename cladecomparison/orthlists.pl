@@ -3,55 +3,40 @@
 use warnings;
 use strict;
 use Data::Dumper;
+use Getopt::Long;
 
-my @pathogenic = `ls Pathogenic/*/*.scan`;
-my @environmental = `ls Environmental/*/*.scan`;
-my @rhizosphere = `ls Rhizosphere/*/*.scan`;
+my @group;
+my @rep;
 
-foreach my $table (@pathogenic) {
-	if ($table =~ /(Pathogenic\/.+\/.+).scan/) {
-		if ($1 eq "Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853") {
-			next;
-		}
-		else {
-			if (-e "$1.orths") {
-				next;
-			}
-			else {
-				system "~/Dropbox/scripts/orthlist.pl Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853.faa $1.faa Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853.scan $1.scan $1.orths";
-			}
-		}
-	}
+GetOptions ("group=s" => \@group,
+"rep=s" => \@rep);
+
+if (not @group) {
+	print "please specify groups for comparison using --group\n";
+}
+if (not @rep) {
+	print "please specify reference genomes using --rep\n";
 }
 
-foreach my $table (@environmental) {
-	if ($table =~ /(Environmental\/.+\/.+).scan/) {
-		if ($1 eq "Environmental/Pfl_Pf0-1_E/Pfl_Pf0-1_E_NC_007492") {
-			next;
+foreach my $num (0..$#group) {
+	my $group = $group[$num];
+	my $rep = $rep[$num];
+	my @members = `ls $group/*.faa`;
+	my $comp;
+	foreach my $member (@members) {
+		if ($member =~ /$group\/(.+).faa/) {
+			$comp = $1;
 		}
-		else {
-			if (-e "$1.orths") {
-				next;
+		if ($member =~ /$rep/) {
+			if ($num > 0) {
+				system "~/Dropbox/scripts/orthlist.pl $group[0]/$rep[0].faa $group/$rep.faa $group[0]/$rep[0].scan $group/$rep.scan $group/reporths.orths";
 			}
 			else {
-				system "~/Dropbox/scripts/orthlist.pl Environmental/Pfl_Pf0-1_E/Pfl_Pf0-1_E_NC_007492.faa $1.faa Environmental/Pfl_Pf0-1_E/Pfl_Pf0-1_E_NC_007492.scan $1.scan $1.orths";
-			}
-		}
-	}
-}
-
-foreach my $table (@rhizosphere) {
-	if ($table =~ /(Rhizosphere\/.+\/.+).scan/) {
-		if ($1 eq "Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896") {
-			next;
-		}
-		else {
-			if (-e "$1.orths") {
 				next;
 			}
-			else {
-				system "~/Dropbox/scripts/orthlist.pl Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896.faa $1.faa Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896.scan $1.scan $1.orths";
-			}
+		}
+		else {
+			system "~/Dropbox/scripts/orthlist.pl $group/$rep.faa $group/'$comp'.faa $group/$rep.scan $group/'$comp'.scan $group/'$comp'.orths";
 		}
 	}
 }

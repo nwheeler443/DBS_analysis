@@ -29,7 +29,7 @@ foreach my $file (@files) {
             next;
         }
         else {
-            system "hmmscan --domtblout $1.scan ../scripts/bigfiles/deltaBS.hmmlib $1.faa";
+            system "hmmscan --domtblout $1.scan ~/Dropbox/scripts/bigfiles/deltaBS.hmmlib $1.faa";
         }
     }
 }

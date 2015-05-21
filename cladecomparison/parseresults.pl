@@ -3,22 +3,26 @@
 use warnings;
 use strict;
 use Data::Dumper;
+use Getopt::Long;
 
-my @keys = ("Pathogenic", "Rhizosphere", "Environmental");
-my @refs = ("Pathogenic/Pto_DC3000_P/Pto_DC3000_P_AE16853", "Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896", "Environmental/Pfl_Pf0-1_E/Pfl_Pf0-1_E_NC_007492");
-my @dbsfiles = ("path-rhiz.dbs/results.dbs", "path-rhiz.dbs/results.dbs", "path-env.dbs/results.dbs");		# will only get pathogen genes with an ortholog in rhizosphere dbs comparison
+my (@groups, @reps, @dbsfiles);
 
-foreach my $comparison (0..2) {
-	my $key = $keys[$comparison];
-	my $ref = $refs[$comparison];
-	print "$ref\n";
-	my @scanfiles = `ls $key/*/*.scan`;
+GetOptions(
+				"g=s@"	=> \@groups,
+				"r=s@"	=> \@reps,
+				"d=s@"	=> \@dbsfiles);
+
+foreach my $num (0..$#groups) {
+	my $group = $groups[$num];
+	my $rep = $reps[$num];
+	my $repcode = "$group/$rep";
+	my @scanfiles = `ls $group/*.scan`;
 	my %orths;
-	my $archfile = $dbsfiles[$comparison];
+	my $archfile = $dbsfiles[$num];
 	my %genearchs;
 	# makes a hash with gene architectures for each gene and makes orthlist for the reference species
 	my $index;
-	if ($comparison == 0) {$index = 0}
+	if ($num == 0) {$index = 0}
 	else {$index = 1}
 	open DBSFILE, "$archfile";
 	while (<DBSFILE>) {
@@ -26,21 +30,27 @@ foreach my $comparison (0..2) {
 		my @split = split(/\s+/, $_);
 		push @{$genearchs{$split[$index]}{domains}}, $split[2];
 		push @{$genearchs{$split[$index]}{scores}}, $split[9];
-		$orths{$ref}{$split[$index]} = $split[$index];
+		$orths{$repcode}{$split[$index]} = $split[$index];
 	}
 
 	# fills out the rest of the ortholog hash
 	foreach my $scan (@scanfiles) {
-		if ($scan =~ /($key\/.+\/.+).scan/) {
-			open ORTHS, "$1.orths";
+		if ($scan =~ /($group\/.+).scan/) {			# might want to put in a next if $rep type thing here
 			my $name = $1;
+			if ($name eq $repcode) {
+				next;
+			}
+			open ORTHS, "$1.orths";
 			while (<ORTHS>) {
 				if ($_ =~ /(\S+)\s+(\S+)/) {
 					$orths{$name}{$2} = $1;
 				}
 			}
+			my @genes = keys(%{$orths{$name}});
+			print "\n\n", $#genes, "\n\n";
 		}
 	}
+	close ORTHS;
 	
 	my %fullscores;
 	my %scores;
@@ -49,7 +59,7 @@ foreach my $comparison (0..2) {
 	# makes a hash of scores for each gene
 	foreach my $scan (@scanfiles) {
 		my $name;
-		if ($scan =~ /($key\/.+\/.+).scan/) {
+		if ($scan =~ /($group\/.+).scan/) {			# strange that the group is included here...
 			$name = $1;
 		}
 		push @names, $name;
@@ -69,11 +79,13 @@ foreach my $comparison (0..2) {
 				shift @{$fullscores{$name}{$gene}{$domain}};
 			}
 		}
+		my @genes = keys(%{$scores{$name}});
+		print "\n\n", $#genes, "\n\n";
 	}
 	
 	my %scoresums;
 	# initialises score list with NAs, will replace them if an ortholog is present
-	foreach my $refgene (keys(%{$orths{$ref}})) {
+	foreach my $refgene (keys(%{$orths{$repcode}})) {
 		foreach my $pos (0..$#names) {
 			push @{$scoresums{$refgene}}, "NA";
 		}
@@ -83,17 +95,18 @@ foreach my $comparison (0..2) {
 		my $name = $names[$pos];				# for each member of the group
 		foreach my $gene (keys(%{$scores{$name}})) {		# for each gene
 			my $runningtotal = 0;
-				foreach my $score (@{$scores{$name}{$gene}}) {			# why won't this work?! still getting a valid output file
-					$runningtotal += $score;							# add up the individual domain scores
+			foreach my $score (@{$scores{$name}{$gene}}) {
+				if (defined($score)) {
+					$runningtotal += $score or die Dumper (\@{$scores{$name}{$gene}});							# add up the individual domain scores
 				}
+			}
 			$scoresums{$orths{$name}{$gene}}[$pos] = $runningtotal;
-			print $runningtotal;
 		}
 	}
 	
-	open OUT, "> $key.scores.NAs.txt";
+	open OUT, "> $rep.scores.txt";
 	foreach my $pos (0..$#names) {
-		if ($names[$pos] =~ /^$key\/(.+)\/.+$/) {
+		if ($names[$pos] =~ /^$group\/(.+)$/) {
 			print OUT "\t$1";
 		}
 	}

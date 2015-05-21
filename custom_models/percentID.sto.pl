@@ -14,13 +14,15 @@ use Data::Dumper;
 
 my $filename;
 my @cutoffs;
+my $outdir;
 
 # send in argumants from another script to indicate input file and cutoff
 foreach my $arg (@ARGV) {
 	print $arg, "\t";
-	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)$/) {			# need to add an output directory option
+	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)\s+(\S+)$/) {			# need to add an output directory option
 		$filename = $1;
 		@cutoffs = $2;
+		$outdir=$3;
 	}
 	else {print "wrong argument input\n"}
 }
@@ -93,7 +95,7 @@ close PIDS;
 
 #produce output file once all PIDs have been calculated
 foreach my $cut (@cutoffs) {
-	my $outfile = "filteredTF/$original.$cut.fasta";
+	my $outfile = "$outdir/$original.$cut.fasta";
 	open OUT, "> $outfile";
 	print OUT ">$original\n";
 	foreach my $res (0..$#{$sequences{$original}}) {
@@ -113,7 +115,7 @@ foreach my $cut (@cutoffs) {
 
 # remove columns with all gaps to produce aligned file
 foreach my $cut (@cutoffs) {
-	system "esl-reformat --mingap afa filteredTF/$original.$cut.fasta > filteredTF/$original.afa";
+	system "esl-reformat --mingap afa $outdir/$original.$cut.fasta > $outdir/$original.afa";
 }
 
 ############################
