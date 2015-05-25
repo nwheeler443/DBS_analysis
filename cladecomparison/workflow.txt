@@ -14,6 +14,3 @@ Rhizosphere strain: Rhizosphere/Pfl_PCL1751_R/Pfl_PCL1751_R_CP010896
 
 ** Paul pointed out that a zero may mean failure to sequence a gene, rather than absence of the gene from the genome, so we are going for NA values rather than zeros
 
-***T3SS SCORING***
-orthlists? or just count up scores for each isolate, if there’s 2 just count that?
-looks like it gives you one score per sequence per model in the full sequence section, so just going to go with that

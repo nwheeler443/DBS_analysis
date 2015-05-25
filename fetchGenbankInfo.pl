@@ -23,24 +23,28 @@ my ($printMe,$tag,$name,$product)=(0,"","","");
 open(F, "< $fileName");
 while (my $f = <F>){
     chomp($f);
-    if ($f=~/^FT\s+\/gene="(\S+)"/){
+	#    if ($f=~/^FT\s+\/gene="(\S+)"/){
+	if ($f=~/\s+\/gene="(\S+)"/){
 	$name=$1;	
 	$printMe=0;
     }
-    elsif($f=~/^FT\s+\/locus_tag="(\S+)"/){
+#    elsif($f=~/^FT\s+\/locus_tag="(\S+)"/){
+	elsif($f=~/\s+\/locus_tag="(\S+)"/){
 	$tag=$1; 	
     }
-    elsif($f=~/^FT\s+\/product="(.*)"/){
+#    elsif($f=~/^FT\s+\/product="(.*)"/){
+	elsif($f=~/\s+\/product="(.*)"/){
 	$product=$1; 
 	$printMe=1; 
     }
-    elsif($f=~/^FT\s+\/product="(.*)/){
+#    elsif($f=~/^FT\s+\/product="(.*)/){
+	elsif($f=~/\s+\/product="(.*)/){
 	$product=$1; 
 	
 	while(!$printMe){
 	    $f = <F>; 
 	    chomp($f); 
-	    if($f=~/^FT\s+(.*)"/){
+	    if($f=~/\s+(.*)"/){
 		$product.=$1; 
 		$printMe=1; 
 	    }
