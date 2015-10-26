@@ -1,6 +1,6 @@
-## you would run this from Terminal by typing: ./fetchFASTAinfo.pl fastafile.fasta
-
 #!/usr/bin/perl
+
+## you would run this from Terminal by typing: ./fetchFASTAinfo.pl fastafile.fasta
 
 use warnings;
 use strict;

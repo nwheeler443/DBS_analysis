@@ -5,7 +5,6 @@ use strict;
 
 my @accessions=@ARGV; 
 
-
 print "[@accessions]\n"; 
 
 my (%acc2name,%name2acc,%nameCnt); 

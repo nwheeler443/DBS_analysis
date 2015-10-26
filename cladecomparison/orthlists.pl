@@ -27,7 +27,7 @@ foreach my $num (0..$#group) {
 		if ($member =~ /$group\/(.+).faa/) {
 			$comp = $1;
 		}
-		if ($member =~ /$rep/) {
+		if ($member eq /$rep/) {
 			if ($num > 0) {
 				system "~/Dropbox/scripts/orthlist.pl $group[0]/$rep[0].faa $group/$rep.faa $group[0]/$rep[0].scan $group/$rep.scan $group/reporths.orths";
 			}

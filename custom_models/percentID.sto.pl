@@ -6,23 +6,16 @@ use warnings;
 use strict;
 use Data::Dumper;
 
-#my $filename = shift @ARGV;
-#my @cutoffs = @ARGV;
-#
-#print $filename;
-#print Dumper @cutoffs;
-
 my $filename;
-my @cutoffs;
+my @cutoffs = [0,0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90,1];
 my $outdir;
 
 # send in argumants from another script to indicate input file and cutoff
 foreach my $arg (@ARGV) {
 	print $arg, "\t";
-	if ($arg =~ /^(\S+\/\S+.hits)\s+(\S+)\s+(\S+)$/) {			# need to add an output directory option
+	if ($arg =~ /^(\S+.hits)\s+(\S+)$/) {
 		$filename = $1;
-		@cutoffs = $2;
-		$outdir=$3;
+		$outdir=$2;
 	}
 	else {print "wrong argument input\n"}
 }
@@ -69,9 +62,9 @@ my %overthreshold;
 # go through each hit and determine the percentage identity
 open PIDS, "> troubleshooting/$original.pids.txt";
 my %matchcounts;
-my $count = 0;
+#my $count = 0;
 foreach my $seq (keys(%sequences)){
-	if ($count < 250) {
+#	if ($count < 250) {
 		next if ($seq eq "$original");
 		my $alignmentlength = $#{$sequences{$original}} + 1;
 		$matchcounts{$seq}=0;
@@ -85,11 +78,11 @@ foreach my $seq (keys(%sequences)){
 		}
 		my $percentid = $matchcounts{$seq}/$alignmentlength;
 		$percentids{$seq} = $percentid;
-		if ($percentid > 0.35) {
-			$count++;
-		}
+#		if ($percentid > 0.35) {
+#			$count++;
+#		}
 		printf PIDS "%0.2f\t$seq\n", ($matchcounts{$seq}/$alignmentlength*100);
-	}
+#	}
 }
 close PIDS;
 

@@ -13,7 +13,7 @@ my @done;
 
 foreach my $group (@groups) {
 	push @files, `ls $group/*.faa`;
-	push @done, `ls $group/*.scan`;
+	#push @done, `ls $group/*.scan`;
 }
 
 my @doneids;
@@ -29,7 +29,7 @@ foreach my $file (@files) {
             next;
         }
         else {
-            system "hmmscan --domtblout $1.scan ~/Dropbox/scripts/bigfiles/deltaBS.hmmlib $1.faa";
+            system "hmmsearch --domtblout $1.search --cut_tc ~/bigfiles/deltaBS.hmmlib $1.faa";
         }
     }
 }

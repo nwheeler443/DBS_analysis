@@ -41,13 +41,13 @@ foreach my $num (0..$#groups) {
 				next;
 			}
 			open ORTHS, "$1.orths";
+			print "$1.orths\n";
 			while (<ORTHS>) {
 				if ($_ =~ /(\S+)\s+(\S+)/) {
 					$orths{$name}{$2} = $1;
 				}
 			}
 			my @genes = keys(%{$orths{$name}});
-			print "\n\n", $#genes, "\n\n";
 		}
 	}
 	close ORTHS;

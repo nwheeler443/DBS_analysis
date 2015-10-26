@@ -1,4 +1,4 @@
-1) runscan produces hmm scan files for each .faa file
+1) [producefasta first if needed] runscan produces hmm scan files for each .faa file
 
 2) orthlists uses these to produce lists of orthologous proteins, using one representative from each group as a comparator
 
